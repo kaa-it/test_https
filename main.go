@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"golang.org/x/crypto/acme/autocert"
@@ -36,6 +37,10 @@ func main() {
 		go http.ListenAndServe(":8084", http.HandlerFunc(redirectToHttps))
 		http.ListenAndServeTLS(":8085", "cert.pem", "key.pem", nil)
 	} else {
+		if _, err := os.Stat("./certs"); os.IsNotExist(err) {
+			os.MkdirAll("./certs", os.ModePerm)
+		}
+
 		certManager := autocert.Manager{
 			Prompt: autocert.AcceptTOS,
 			Cache:  autocert.DirCache("./certs"),
