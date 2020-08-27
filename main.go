@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -38,7 +39,9 @@ func main() {
 		http.ListenAndServeTLS(":8085", "cert.pem", "key.pem", nil)
 	} else {
 		if _, err := os.Stat("./certs"); os.IsNotExist(err) {
-			os.MkdirAll("./certs", os.ModePerm)
+			if err := os.MkdirAll("./certs", os.ModePerm); err != nil {
+				panic(err)
+			}
 		}
 
 		certManager := autocert.Manager{
@@ -52,7 +55,14 @@ func main() {
 			TLSConfig: certManager.TLSConfig(),
 		}
 
-		go http.ListenAndServe(":80", certManager.HTTPHandler(nil))
-		srv.ListenAndServeTLS("", "")
+		go func() {
+			if err := http.ListenAndServe(":80", certManager.HTTPHandler(nil)); err != nil {
+				log.Printf("http server: %s", err)
+			}
+		}()
+
+		if err := srv.ListenAndServeTLS("", ""); err != nil {
+			log.Printf("https server: %s", err)
+		}
 	}
 }
