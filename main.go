@@ -50,13 +50,13 @@ func main() {
 		}
 
 		srv := &http.Server{
-			Addr:      ":443",
+			Addr:      ":8443",
 			Handler:   http.HandlerFunc(handler),
 			TLSConfig: certManager.TLSConfig(),
 		}
 
 		go func() {
-			if err := http.ListenAndServe(":80", certManager.HTTPHandler(nil)); err != nil {
+			if err := http.ListenAndServe(":8080", certManager.HTTPHandler(nil)); err != nil {
 				log.Printf("http server: %s", err)
 			}
 		}()
